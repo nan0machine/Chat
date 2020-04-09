@@ -1,6 +1,5 @@
 package client;
 
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -16,6 +15,7 @@ import java.awt.event.ActionEvent;
 
 public class LoginWindow extends JFrame {
 
+	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JTextField textName;
 	private JTextField textAddress;
@@ -70,8 +70,9 @@ public class LoginWindow extends JFrame {
 		btnJoin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Client user = new Client(textName.getText(), textAddress.getText(), Integer.parseInt(textPort.getText()));
+				new ChatWindow();
 				dispose();
-				//System.out.println(user.toString());
+				System.out.println(user.toString());
 			}
 		});
 		btnJoin.setBounds(102, 247, 89, 23);
