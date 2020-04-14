@@ -69,15 +69,15 @@ public class LoginWindow extends JFrame {
 		JButton btnJoin = new JButton("Join");
 		btnJoin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Client user = new Client(textName.getText(), textAddress.getText(), Integer.parseInt(textPort.getText()));
-				new ChatWindow();
 				dispose();
-				System.out.println(user.toString());
-			}
+				new ChatWindow(textName.getText(), textAddress.getText(), Integer.parseInt(textPort.getText()));
+				}
 		});
 		btnJoin.setBounds(102, 247, 89, 23);
 		contentPane.add(btnJoin);
 	}
+	
+	
 	
 	
 	

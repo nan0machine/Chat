@@ -21,7 +21,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.JLabel;
 import java.awt.Component;
 
-public class ChatWindow extends JFrame {
+public class ChatWindow extends JFrame implements Runnable{
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
@@ -30,9 +30,28 @@ public class ChatWindow extends JFrame {
 	private JTextArea textUserlist;
 	private JLabel lblAdvice;
 	private JLabel lblUsers;
+	private boolean running;
+	private Client client;
 	
+	public ChatWindow(String name, String address, int port) {
+		
+		client = new Client(name, address, port);
+		
+		if(!client.openConnection()) {
+			System.err.println("Connection error");
+			console("Connection error");
+			return;
+		}
+		
+		
+		
+		
+		CreateWin();
+		Thread run = new Thread(this,"Client");
+		run.start();
+	}
 	
-	public ChatWindow() {
+	private void CreateWin() {
 		setResizable(false);
 		
 		try {
@@ -139,12 +158,19 @@ public class ChatWindow extends JFrame {
 		setVisible(true);
 		textMessage.requestFocusInWindow();
 	}
+	
+	
+	public void run() {
+		running = true;
+		listen();
+	}
 
 	
 	public void send(String msg) {
 		if(msg.equals(""))
 			return;
-		console(msg);
+		
+		client.send(msg);
 		textMessage.setText("");
 	}
 	
@@ -152,4 +178,17 @@ public class ChatWindow extends JFrame {
 		txtrHistory.append(msg + "\n\r");
 		txtrHistory.setCaretPosition(txtrHistory.getDocument().getLength());
 	}
+	
+	
+	private void listen() {
+		Thread listen = new Thread("listen") {
+			public void run() {
+				while(running) {
+					console(client.receive());
+				}
+			}
+		};
+		listen.start();
+	}
+	
 }
