@@ -33,16 +33,16 @@ public class ChatWindow extends JFrame implements Runnable{
 	private boolean running;
 	private Client client;
 	
-	public ChatWindow(String name, String address, int port) {
+	public ChatWindow(String nickname, String address, int port) {
 		
-		client = new Client(name, address, port);
+		client = new Client(nickname, address, port);
 		
 		if(!client.openConnection()) {
 			System.err.println("Connection error");
 			console("Connection error");
 			return;
 		}
-		
+		client.send("/n/"+client.nickname);
 		
 		
 		

@@ -43,9 +43,9 @@ public class Server implements Runnable{
 				System.out.println("New client request received : " + socket); 
 				
 				ClientHandler new_client = new ClientHandler(socket,
-												new DataInputStream(socket.getInputStream()),
-												new DataOutputStream(socket.getOutputStream()),
-												++ID);
+										   new DataInputStream(socket.getInputStream()),
+										   new DataOutputStream(socket.getOutputStream()),
+										   ++ID);
 				System.out.println(ID);
 	            System.out.println("Adding this client to active client list"); 
 

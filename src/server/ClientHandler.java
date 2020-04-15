@@ -59,15 +59,14 @@ public class ClientHandler implements Runnable{
 			this.name = str.replace("/n/", "");
 			return;
 		}
-		
 		Send(str);
-		
 	}
+	
 	
 	private void Send(String message) {
 		for(ClientHandler client : Server.clients) {
 			try {
-				client.output.writeUTF(message);
+				client.output.writeUTF(this.name + ": " + message);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

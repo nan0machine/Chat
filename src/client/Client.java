@@ -8,7 +8,7 @@ import java.io.*;
 
 public class Client{
 	
-	private String nickname;
+	protected String nickname;
 	
 	private Socket socket;
 	private String address;
@@ -41,7 +41,6 @@ public class Client{
 	}
 	
 	
-
 	public String toString() { 
 		return this.nickname + " " + this.address.toString() + " " + this.port;
 	}
