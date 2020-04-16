@@ -33,28 +33,25 @@ public class ClientHandler implements Runnable{
 	public void run() {
 		running = true;
 		while(running) {
-		try {
-			received_msg = input.readUTF(); //!
+			try {
+				received_msg = input.readUTF();
 			
-			System.out.println(received_msg);
-			process(received_msg);
+				System.out.println(received_msg);
+				process(received_msg);
 			
-		}catch(Exception e) {
-			e.printStackTrace();
+			}catch(Exception e) {
+				e.printStackTrace();
+				disconnect();
 			}
-		}
-		try {
-			this.input.close();
-			this.output.close();
-		}catch(IOException e) {
-			e.printStackTrace();
-		}
-		
-		
+			}
 	}
 	
 	
 	private void process(String str) {
+		if(str.equals("/d/")) {
+			disconnect();
+			return;
+		}
 		if(str.startsWith("/n/")) {
 			this.name = str.replace("/n/", "");
 			return;
@@ -73,6 +70,21 @@ public class ClientHandler implements Runnable{
 		}
 	}
 	
+	private void disconnect() {
+		try {
+			//input.close();
+			//output.close();
+			socket.close();
+			running = false;
+			Server.clients.remove(this);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public String toString() {
+		return "Name: " + this.name + " ID: " + this.ID;
+	}
 	
 }
 

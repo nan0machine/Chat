@@ -18,6 +18,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+
 import javax.swing.JLabel;
 import java.awt.Component;
 
@@ -154,6 +158,15 @@ public class ChatWindow extends JFrame implements Runnable{
 		gbc_btnSend.gridx = 2;
 		gbc_btnSend.gridy = 2;
 		contentPane.add(btnSend, gbc_btnSend);
+		
+		addWindowListener(new WindowAdapter (){
+			public void windowClosing(WindowEvent e) {
+				String disconnect = "/d/";
+				send(disconnect);
+				running = false;
+				client.disconnect();
+			}
+		});
 		
 		setVisible(true);
 		textMessage.requestFocusInWindow();

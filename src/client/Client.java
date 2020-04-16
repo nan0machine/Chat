@@ -1,16 +1,14 @@
 package client;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.io.*;
 
 public class Client{
 	
 	protected String nickname;
 	
-	private Socket socket;
+	protected Socket socket;
 	private String address;
 	private int port;
 	
@@ -52,6 +50,8 @@ public class Client{
 			msg = input.readUTF();
 		} catch (IOException e) {
 			e.printStackTrace();
+			disconnect();
+			msg = "No Connection";
 		}
 		System.out.println(msg);
 		return msg;
@@ -63,9 +63,11 @@ public class Client{
 		send = new Thread("send") {
 			public void run() {
 				try {
+					output.flush();
 					output.writeUTF(m);
 				} catch (IOException e) {
 					e.printStackTrace();
+					disconnect();
 				}
 			}
 		};
@@ -73,8 +75,14 @@ public class Client{
 	}
 
 	
-	
-	
+	protected void disconnect() {
+		synchronized(socket) {
+			try {
+				this.socket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+	}}
 	
 	
 	
