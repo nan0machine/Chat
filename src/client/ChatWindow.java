@@ -21,6 +21,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.net.Socket;
 
 import javax.swing.JLabel;
 import java.awt.Component;
@@ -34,8 +35,10 @@ public class ChatWindow extends JFrame implements Runnable{
 	private JTextArea textUserlist;
 	private JLabel lblAdvice;
 	private JLabel lblUsers;
-	private boolean running;
+	private volatile boolean running;
 	private Client client;
+	
+	private Thread listen, run;
 	
 	public ChatWindow(String nickname, String address, int port) {
 		
@@ -46,17 +49,17 @@ public class ChatWindow extends JFrame implements Runnable{
 			console("Connection error");
 			return;
 		}
-		client.send("/n/"+client.nickname);
-		
-		
-		
 		CreateWin();
-		Thread run = new Thread(this,"Client");
+		
+		send("/n/"+nickname, false);
+	
+		running = true;
+		run = new Thread(this,"Client");
 		run.start();
 	}
 	
 	private void CreateWin() {
-		setResizable(false);
+		setResizable(false); 
 		
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -117,7 +120,7 @@ public class ChatWindow extends JFrame implements Runnable{
 		textMessage.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode() == KeyEvent.VK_ENTER) {
-					send(textMessage.getText());
+					send(textMessage.getText(), true);
 				}
 			}
 		});
@@ -150,7 +153,7 @@ public class ChatWindow extends JFrame implements Runnable{
 		btnSend.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				send(textMessage.getText());
+				send(textMessage.getText(), true);
 			}
 		});
 		GridBagConstraints gbc_btnSend = new GridBagConstraints();
@@ -159,14 +162,12 @@ public class ChatWindow extends JFrame implements Runnable{
 		gbc_btnSend.gridy = 2;
 		contentPane.add(btnSend, gbc_btnSend);
 		
-		addWindowListener(new WindowAdapter (){
+		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				String disconnect = "/d/";
-				send(disconnect);
-				running = false;
-				client.disconnect();
+				send("/d/", false);
 			}
-		});
+		}
+		);
 		
 		setVisible(true);
 		textMessage.requestFocusInWindow();
@@ -174,16 +175,23 @@ public class ChatWindow extends JFrame implements Runnable{
 	
 	
 	public void run() {
-		running = true;
-		listen();
+		 listen();
 	}
 
-	
-	public void send(String msg) {
+
+	// /m/ - massage
+	// /c/ - command 
+	public void send(String msg, boolean txt) {
 		if(msg.equals(""))
 			return;
 		
-		client.send(msg);
+		String mark_msg = null;
+		if(txt)
+			mark_msg = "/m/" + msg;
+		else 
+			mark_msg = "/c/" + msg;
+		
+		client.send(mark_msg);
 		textMessage.setText("");
 	}
 	
@@ -194,10 +202,17 @@ public class ChatWindow extends JFrame implements Runnable{
 	
 	
 	private void listen() {
-		Thread listen = new Thread("listen") {
+		 listen = new Thread("listen") {
 			public void run() {
+				String recv_msg = null;
 				while(running) {
-					console(client.receive());
+					try {
+					 recv_msg = client.receive();
+					}catch(IOException disconnect) {
+						running = false;
+						client.disconnect();
+					}catch(Exception e) { e.printStackTrace();}
+					console(recv_msg);		
 				}
 			}
 		};

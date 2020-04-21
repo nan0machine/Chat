@@ -14,8 +14,6 @@ public class ClientHandler implements Runnable{
 	
 	private String name;
 	public final int ID;
-	
-	private String received_msg;
 	private boolean running;
 	
 	public ClientHandler(Socket socket,
@@ -33,37 +31,49 @@ public class ClientHandler implements Runnable{
 	public void run() {
 		running = true;
 		while(running) {
+		String received_msg = null;
 			try {
 				received_msg = input.readUTF();
-			
-				System.out.println(received_msg);
 				process(received_msg);
-			
 			}catch(Exception e) {
 				e.printStackTrace();
-				disconnect();
 			}
-			}
+		}
 	}
 	
 	
 	private void process(String str) {
-		if(str.equals("/d/")) {
-			disconnect();
-			return;
-		}
-		if(str.startsWith("/n/")) {
-			this.name = str.replace("/n/", "");
-			return;
-		}
-		Send(str);
+		
+		if(str.startsWith("/m/")) {
+			str = str.substring(3, str.length());
+			Send(str);
+			
+		}else if(str.startsWith("/c/")) {
+			str = str.substring(3, str.length());
+	
+			if(str.equals("/d/")) {
+				disconnect();
+			}
+			else if(str.startsWith("/n/")) {
+				str = str.substring(3, str.length());
+				setName(str);
+			}
+		}	
 	}
 	
+	private void setName(String name) {
+		this.name = name;
+	}
+	
+	private String getName() {
+		return this.name;
+	}
 	
 	private void Send(String message) {
 		for(ClientHandler client : Server.clients) {
 			try {
-				client.output.writeUTF(this.name + ": " + message);
+				System.out.println(message);
+				client.output.writeUTF(getName() + ": " + message);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -71,19 +81,16 @@ public class ClientHandler implements Runnable{
 	}
 	
 	private void disconnect() {
+		this.running = false;
 		try {
-			//input.close();
-			//output.close();
-			socket.close();
-			running = false;
-			Server.clients.remove(this);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+			this.socket.close();
+		} catch (IOException e) {e.printStackTrace();}
+		Server.clients.remove(this);
+		System.out.println(this.toString() + " removed from list");
 	}
 	
 	public String toString() {
-		return "Name: " + this.name + " ID: " + this.ID;
+		return "Name: " + getName() + " ID: " + this.ID;
 	}
 	
 }

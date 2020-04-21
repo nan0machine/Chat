@@ -12,9 +12,10 @@ public class Client{
 	private String address;
 	private int port;
 	
-	private Thread send;
-	private DataInputStream input;
-	private DataOutputStream output;
+	protected Thread send;
+	
+	protected DataInputStream input;
+	protected DataOutputStream output;
 	
 	public Client(String nickname, String address, int port) {
 		this.nickname = nickname;
@@ -44,30 +45,21 @@ public class Client{
 	}
 
 	
-	protected String receive() {
-		String msg = "";
-		try{
-			msg = input.readUTF();
-		} catch (IOException e) {
-			e.printStackTrace();
-			disconnect();
-			msg = "No Connection";
-		}
-		System.out.println(msg);
+	protected String receive() throws IOException {
+		String msg = null;
+		msg = input.readUTF();
 		return msg;
 	}
 		
 	
 	
-	protected void send(String m) {
+	protected void send(String text) {
 		send = new Thread("send") {
 			public void run() {
 				try {
-					output.flush();
-					output.writeUTF(m);
+					output.writeUTF(text);
 				} catch (IOException e) {
 					e.printStackTrace();
-					disconnect();
 				}
 			}
 		};
@@ -75,14 +67,14 @@ public class Client{
 	}
 
 	
-	protected void disconnect() {
-		synchronized(socket) {
-			try {
-				this.socket.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-	}}
+	public void disconnect() {
+		try {
+			socket.close();
+		} catch (IOException e) {e.printStackTrace();}
+	}
+
+
+	
 	
 	
 	
