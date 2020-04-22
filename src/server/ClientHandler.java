@@ -4,6 +4,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ClientHandler implements Runnable{
@@ -46,12 +48,13 @@ public class ClientHandler implements Runnable{
 		
 		if(str.startsWith("/m/")) {
 			str = str.substring(3, str.length());
-			Send(str);
+			toSend(str);
 			
 		}else if(str.startsWith("/c/")) {
 			str = str.substring(3, str.length());
 	
 			if(str.equals("/d/")) {
+				broadcast("is disconnected!" );
 				disconnect();
 			}
 			else if(str.startsWith("/n/")) {
@@ -61,23 +64,46 @@ public class ClientHandler implements Runnable{
 		}	
 	}
 	
-	private void setName(String name) {
-		this.name = name;
+	private void toSend(String message) {
+		Pattern pattern = Pattern.compile("@");
+		Matcher matcher = pattern.matcher(message);
+		
+		if(matcher.find()) {
+			pattern = Pattern.compile("@[\\w]*");
+			matcher = pattern.matcher(message);
+		
+			while(matcher.find()) {
+				send(message, matcher.group(0).substring(1) );
+			}
+		}else {
+			broadcast(message);
+		}
 	}
 	
-	private String getName() {
-		return this.name;
-	}
 	
-	private void Send(String message) {
+	private void send(String message, String receiver) {
 		for(ClientHandler client : Server.clients) {
-			try {
-				System.out.println(message);
-				client.output.writeUTF(getName() + ": " + message);
-			} catch (IOException e) {
-				e.printStackTrace();
+			if(client.name.equals(receiver)) {
+				try {
+					client.output.writeUTF(getName() + ": " + message);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
+	}
+	
+	
+	
+	private void broadcast(String message) {
+		for(ClientHandler client : Server.clients) {
+			if(!client.name.equals(this.name)) {
+				try {
+					client.output.writeUTF(getName() + ": " + message);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+		}	}
 	}
 	
 	private void disconnect() {
@@ -89,9 +115,19 @@ public class ClientHandler implements Runnable{
 		System.out.println(this.toString() + " removed from list");
 	}
 	
+	
 	public String toString() {
 		return "Name: " + getName() + " ID: " + this.ID;
 	}
+	
+	private void setName(String name) {
+		this.name = name;
+	}
+	
+	private String getName() {
+		return this.name;
+	}
+	
 	
 }
 

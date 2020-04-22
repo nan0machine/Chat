@@ -51,7 +51,7 @@ public class ChatWindow extends JFrame implements Runnable{
 		}
 		CreateWin();
 		
-		send("/n/"+nickname, false);
+		client.send("/c//n/"+nickname);
 	
 		running = true;
 		run = new Thread(this,"Client");
@@ -184,6 +184,7 @@ public class ChatWindow extends JFrame implements Runnable{
 	public void send(String msg, boolean txt) {
 		if(msg.equals(""))
 			return;
+		console(client.nickname + ": " + msg);
 		
 		String mark_msg = null;
 		if(txt)
